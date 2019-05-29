@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 配置主配置文件的dtd约束 -->
+<!DOCTYPE configuration
+ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-config.dtd">
+ 
+<configuration>
+
+
+	<settings>
+	<!-- 使用spring后，如果需要输出mybatis的日志，需要如下的配置 -->
+		<setting name="logImpl" value="log4j"/>
+		
+		<!-- 表中的字段使用下划线，表中属性使用驼峰规则
+			查询时，入股偶像使用resultType，进入如下配置：映射的时候，下划线转驼峰进行映射
+			 -->
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+	</settings>
+
+	<typeAliases>
+		<typeAlias type="com.qfedu.pojo.SysUser" alias="sysUser"/>
+	</typeAliases>
+
+	<!-- 
+	    plugins在配置文件中的位置必须符合要求，否则会报错，顺序如下:
+	    properties?, settings?, 
+	    typeAliases?, typeHandlers?, 
+	    objectFactory?,objectWrapperFactory?, 
+	    plugins?, 
+	    environments?, databaseIdProvider?, mappers?
+	-->
+	<plugins>
+		<!-- com.github.pagehelper为PageHelper类所在包名 -->
+		<plugin interceptor="com.github.pagehelper.PageInterceptor">
+    	    <!-- 使用下面的方式配置参数，后面会有所有的参数介绍 -->
+    	    <property name="param1" value="value1"/>
+		</plugin>
+	</plugins>
+
+
+</configuration>

@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>基础数据</title>
+<link href="../css/stylesheet.css" rel="stylesheet" type="text/css" />
+<link href="../css/style.css" rel="stylesheet" type="text/css" />
+<link href="../pagination/pagination.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../js/jquery-1.12.2.min.js"></script>
+<script type="text/javascript" src="../js/simpla.jquery.configuration.js"></script>
+<script type="text/javascript" src="../js/javascript.js"></script>
+<script type="text/javascript" src="../js/vue.min.js"></script>
+<script type="text/javascript" src="../datepicker/WdatePicker.js"> </script>
+<script type="text/javascript" src="../pagination/jquery.pagination.js"> </script>
+
+</head>
+
+<body>
+<div style="padding:5px;" id="app">
+  <div class="txt" style="padding-top:3px;" >当前位置：基础数据&nbsp;&gt;&nbsp;数据字典管理&nbsp;&gt;&nbsp;数据字典列表
+    <hr class="hr1" />
+  </div>
+  <div class="operation_button">
+  	<a href="#" title="新建" onclick="to('dict_add.html')">新建</a>
+  	<a href="#" title="导入" onclick="to('import.html')">导入</a>
+    <a href="#" title="查询">查询</a>
+  </div>
+  <div class="search_input">
+    <ul class="txt">
+      <li>类别：
+        <input type="text" size="30" />
+      </li>
+      <li>条目：
+        <input type="text" size="30" />
+      </li>
+      <li>值：
+        <input type="text" size="30" />
+      </li>
+    </ul>
+  </div>
+  <div>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="table_list" >
+      <thead>
+        <tr>
+          <th width="5%">编号</th>
+          <th width="20%">姓名</th>
+          <th width="30%">职位</th>
+          <th width="15%">是否删除状态</th>
+          <th width="15%">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+       <tr v-for="user in userList">
+       	<td>{{user.userId}}</td>
+       	<td>{{user.userName}}</td>
+       	<td>{{user.role.roleName}}</td>
+       	<td>{{user.userFlag}}</td>
+       </tr>
+       
+      </tbody>
+    </table>
+  </div>
+   <!--<div class="position"> 
+
+   </div> -->
+  <div class="wrapper">
+  	<div class="eg"></div>
+	<div class="M-box"></div>
+	<div class="tips">当前是第<span class="now">1</span>页,总共<span class="total"></span>页,总共<span class="count"></span>条数据</div></div>
+  </div>
+</div>
+ 
+<script type="text/javascript">
+
+	var vue = new Vue({
+		el:"#app",
+		data:{
+			// 用户列表
+			userList:[]
+		},
+		methods:{
+			loadData(page){
+				var _this = this;
+				$.ajax({
+					type:"get",
+					url:"/crmsys/user/list.do?page=" + page,
+					dataType:"json",
+					success:function(data){
+						if (data.code == 1) {
+							$("tbody").empty();
+							// 修改vue对象中userList的值
+							_this.userList = data.info.rows;
+
+						}
+					}
+				})
+			}
+		},
+		created(){ // 生命周期相关的函数，放在method外面，created表示vue对象创建完成
+			this.loadData(1)
+		}
+	})
+
+
+
+	
+	
+	$(function(){
+		loadData(1);
+	})
+	
+	function loadData(page){
+		$.ajax({
+			type:"get",
+			url:"/crmsys/user/list.do?page=" + page,
+			dataType:"json",
+			success:function(data){
+				if (data.code == 1) {
+					$("tbody").empty();
+					var infos = data.info.rows;
+					$(infos).each(function(){
+						var html = ' <tr>';
+					    html += '      <td>' + this.userId + '</td>';
+					    html += '      <td>' + this.userName+ '</td>';
+					    html += '      <td>' + this.role.roleName + '</td>';
+					    if (this.userFlag == 1) {
+						    html += '      <td>正常</td>';
+						} else {
+						    html += '      <td>已删除</td>';
+						}
+					    html += '      <td><a href="sysuser_update.html?user_id='+ this.userId  +'"><img title="编辑" src="../images/hammer_screwdriver.png" class="op_button"  /> ';
+					    html += '      <a href="javascript:delInfo('+ this.userId +')"><img title="删除"  src="../images/cross.png" class="op_button close" /></a></td>';
+					    html += '     </tr>';
+					    $("tbody").append($(html));
+					})
+					
+					// 总行数
+					var total = data.info.total;
+					// 总页数 ceil向上取整
+					var totalPage = Math.ceil(total / 5);
+					// 当前第几页
+					var pno = $('.now').text();
+					
+					//分页设置
+                    $('.M-box').pagination({  
+                        pageCount: totalPage,  // 总页数
+                        current:pno,//当前第几页  
+                        jump: true,  // 是否显示跳转相关元素
+                        jumpBtn: 'go', // 跳转按钮显示文字
+                        coping: true,    //是否显示首页末页
+                        homePage: '首页',  
+                        endPage: '末页',  
+                        prevContent: '<<',  // 上一页功能 显示文字信息
+                        nextContent: '>>',  
+                        callback:function(index){  // 点击不同的页码按钮，或者其他需要跳转的按钮，会调用该方法
+                        	// index.getCurrent() 获取当前页要使用的页码
+                            $('.now').text(index.getCurrent());   
+                            loadData(index.getCurrent());  
+                       } 
+                    }); 
+				}
+			}
+		})
+	}
+	
+	function delInfo(userId){
+		var rt = window.confirm("确定删除?");
+		if (rt == true) {
+			$.ajax({
+				type:"get",
+				url:"/crmsys/user/delete.do?userId="+userId,
+				dataType:"json",
+				success:function(data){
+					if (data.code == 1) {
+						$("tbody").empty();
+						window.location.href="sysuser.html";
+						loadData();
+					} else {
+						alert(data.info);
+					}
+				}
+			})
+		}
+	}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
